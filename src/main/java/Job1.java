@@ -10,19 +10,6 @@ import org.apache.hadoop.mapred.*;
 import org.apache.hadoop.util.*;
 
 public class Job1 {
-    public static String list_to_string(List<String> a){
-        String result = "";
-        for (int i = 0; i < a.size(); i++){
-            if (result.isEmpty()){
-                result += a.get(i);
-            }
-            else{
-                result += ","+a.get(i);
-            }
-        }
-        return result;
-    }
-
     //Mapper class
     public static class mapper1 extends MapReduceBase implements
             Mapper<LongWritable, Text, Text, Text>{
@@ -56,19 +43,17 @@ public class Job1 {
                     follower_list.add(token[0]);
                 }
                 else{
-                    following_list.add(token[1]);
+                    following_list.add(token[0]);
                 }
             }
 
             for (int i = 0; i < follower_list.size(); i++){
                 for (int j = 0; j < following_list.size(); j++){
                     outputCollector.collect(new Text(following_list.get(j)),
-                            new Text(following_list.get(i)));
+                            new Text(follower_list.get(i)));
                 }
-
                 outputCollector.collect(new Text(key), new Text(follower_list.get(i)));
             }
-
         }
     }
 
@@ -79,8 +64,15 @@ public class Job1 {
         JobConf conf = new JobConf(Job1.class);
 
         conf.setJobName("af_job_1");
+        conf.set("mapred.child.java.opts", "-Xmx2048m");
+        conf.set("mapreduce.map.java.opts", "-Xmx2048m");
+        conf.set("mapreduce.map.memory.mb", "4096");
+
+        conf.set("mapreduce.reduce.java.opts", "-Xmx2048m");
+        conf.set("mapreduce.reduce.shuffle.input.buffer.percent", "0.2");
+        conf.set("mapreduce.reduce.memory.mb", "4096");
         conf.setOutputKeyClass(Text.class);
-        conf.setOutputValueClass(IntWritable.class);
+        conf.setOutputValueClass(Text.class);
         conf.setMapperClass(mapper1.class);
 //        conf.setCombinerClass(reducer1.class);
         conf.setReducerClass(reducer1.class);
@@ -89,7 +81,6 @@ public class Job1 {
 
         FileInputFormat.setInputPaths(conf, new Path(args[0]));
         FileOutputFormat.setOutputPath(conf, new Path(args[1]));
-
         JobClient.runJob(conf);
     }
 }
