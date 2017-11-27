@@ -24,17 +24,17 @@ public class Job2 {
 
     //Reducer class
     public static class reducer2 extends MapReduceBase implements
-            Reducer<Text, Text, IntWritable, Text>
+            Reducer<Text, Text, Text, IntWritable>
     {
         public void reduce(Text key, Iterator<Text> values,
-                           OutputCollector<IntWritable, Text> outputCollector,
+                           OutputCollector<Text, IntWritable> outputCollector,
                            Reporter reporter) throws IOException {
             Set<Text> follower_set = new HashSet();
 
             while (values.hasNext()){
                 follower_set.add(values.next());
             }
-            outputCollector.collect(new IntWritable(follower_set.size()), new Text(key));
+            outputCollector.collect(new Text(key), new IntWritable(follower_set.size()));
         }
     }
 
